@@ -1,0 +1,15 @@
+{
+  "name": "harmonic-hemispheres",
+  "owner": {
+    "name": "Robby Boney",
+    "url": "https://github.com/HarmonicHemispheres"
+  },
+  "description": "Drop-in skills that make Claude better at things.",
+  "plugins": [
+    {
+      "name": "make-it-visual",
+      "source": "./make-it-visual",
+      "description": "Visual-first design rules for mockups, reports, decks, and dashboards: show, don't tell."
+    }
+  ]
+}

@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse Home</title>
+<meta name="description" content="Pulse home dashboard for restaurant owners: today's orders, revenue, prep time and rating, the live order pipeline, a 14-day trend, top sellers and the latest orders.">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* ---------- Tokens ---------- */
+:root{
+  --bg:#F5F5F2; --surface:#FFFFFF; --surface-2:#F8F8F6;
+  --ink:#17181B; --ink-2:#4B4E55; --ink-3:#6C6F76;
+  --line:#E7E7E2; --bar:#D8D9D4; --bar-strong:#A3A5AA;
+  --accent:#4F46E5; --accent-soft:#EFEEFE; --accent-line:#C9C6FA; --on-accent:#FFFFFF;
+  --good:#157A3C; --good-dot:#22A559; --good-soft:#E7F5EC;
+  --warn:#A8520A; --warn-dot:#F0A23A; --warn-soft:#FCF1E2;
+  --bad:#C4302B;  --bad-dot:#E5484D;  --bad-soft:#FCEBEA;
+  --shadow:0 1px 2px rgba(23,24,27,.04),0 6px 20px rgba(23,24,27,.04);
+  --pop-shadow:0 12px 32px rgba(23,24,27,.14),0 2px 6px rgba(23,24,27,.08);
+  --fs-display:28px; --fs-body:15px; --fs-cap:12px;
+  --radius:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1012; --surface:#17181B; --surface-2:#1D1E22;
+    --ink:#EDEDEB; --ink-2:#B6B8BD; --ink-3:#92959B;
+    --line:#2A2C31; --bar:#3A3C42; --bar-strong:#6E7178;
+    --accent:#8F8AFF; --accent-soft:#232147; --accent-line:#4A45A0; --on-accent:#0F1012;
+    --good:#5BD48A; --good-dot:#34B86A; --good-soft:#15301F;
+    --warn:#F2B25C; --warn-dot:#F0A23A; --warn-soft:#352812;
+    --bad:#FF8480;  --bad-dot:#EF5A5E;  --bad-soft:#3A1B1C;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+    --pop-shadow:0 12px 32px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1012; --surface:#17181B; --surface-2:#1D1E22;
+  --ink:#EDEDEB; --ink-2:#B6B8BD; --ink-3:#92959B;
+  --line:#2A2C31; --bar:#3A3C42; --bar-strong:#6E7178;
+  --accent:#8F8AFF; --accent-soft:#232147; --accent-line:#4A45A0; --on-accent:#0F1012;
+  --good:#5BD48A; --good-dot:#34B86A; --good-soft:#15301F;
+  --warn:#F2B25C; --warn-dot:#F0A23A; --warn-soft:#352812;
+  --bad:#FF8480;  --bad-dot:#EF5A5E;  --bad-soft:#3A1B1C;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+  --pop-shadow:0 12px 32px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:400 var(--fs-body)/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+.tnum{font-variant-numeric:tabular-nums}
+.cap{font-size:var(--fs-cap);color:var(--ink-3)}
+svg.lucide{width:18px;height:18px;stroke-width:1.75;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--line)}
+.side-inner{
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;gap:28px;padding:24px 16px;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px;font-weight:700;letter-spacing:-.01em}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--surface);display:grid;place-items:center}
+.logo svg.lucide{width:18px;height:18px;stroke-width:2.25}
+.nav-list{display:flex;flex-direction:column;gap:2px}
+.nav{
+  display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;
+  color:var(--ink-2);font-weight:500;
+  transition:background .15s ease-out,color .15s ease-out;
+}
+.nav:hover{background:var(--surface-2);color:var(--ink)}
+.nav.active{background:var(--accent-soft);color:var(--accent)}
+.nav .count{
+  margin-left:auto;font-size:var(--fs-cap);font-weight:600;color:var(--ink-2);
+  background:var(--bg);border:1px solid var(--line);padding:0 8px;border-radius:999px;
+}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.venue{display:flex;gap:10px;align-items:center;padding:16px 8px 0;border-top:1px solid var(--line)}
+.venue-text{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.venue-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avatar{
+  width:34px;height:34px;border-radius:50%;flex:none;
+  background:var(--surface-2);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:var(--fs-cap);font-weight:600;color:var(--ink-2);
+}
+
+main{min-width:0;padding:32px 40px 48px}
+.wrap{max-width:1320px;margin:0 auto}
+.mobilebar{display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+  display:grid;place-items:center;cursor:pointer;
+}
+.scrim{display:none}
+
+/* ---------- Header ---------- */
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px 24px;flex-wrap:wrap;margin-bottom:32px}
+.eyebrow{font-size:var(--fs-cap);color:var(--ink-3);font-weight:500;display:flex;align-items:center;gap:4px}
+h1{font-size:var(--fs-display);font-weight:600;letter-spacing:-.02em;line-height:1.2;margin-top:6px}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-weight:500;white-space:nowrap;
+}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--bar-strong)}
+.pill .dot{background:var(--good-dot);box-shadow:0 0 0 3px var(--good-soft)}
+.pill.paused .dot{background:var(--warn-dot);box-shadow:0 0 0 3px var(--warn-soft)}
+.updated{display:inline-flex;align-items:center;gap:6px;margin-right:4px}
+.updated svg.lucide{width:14px;height:14px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:10px;
+  border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;white-space:nowrap;
+  transition:background .15s ease-out,border-color .15s ease-out;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--bar)}
+.btn[aria-expanded="true"]{background:var(--surface-2);border-color:var(--bar-strong)}
+.bi{display:inline-flex}
+
+/* ---------- Cards & grid ---------- */
+.grid{display:grid;gap:24px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row2{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.stack > * + *{margin-top:24px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow);min-width:0;
+}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+h2{font-size:var(--fs-body);font-weight:600;line-height:1.4;margin-top:4px;letter-spacing:-.005em}
+
+.info{
+  position:relative;display:inline-grid;place-items:center;width:24px;height:24px;padding:0;
+  border:0;border-radius:50%;background:transparent;color:var(--ink-3);cursor:pointer;
+  transition:color .15s ease-out,background .15s ease-out;
+}
+.info::after{content:"";position:absolute;inset:-8px}
+.info svg.lucide{width:15px;height:15px}
+.info:hover,.info[aria-expanded="true"]{color:var(--ink);background:var(--surface-2)}
+
+/* ---------- KPI tiles ---------- */
+.kpi{display:flex;flex-direction:column;gap:14px}
+.kpi-head{display:flex;align-items:center;gap:10px}
+.kpi-head .info{margin-left:auto}
+.kpi-icon{
+  width:32px;height:32px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--ink-2);
+}
+.kpi-icon svg.lucide{width:17px;height:17px}
+.kpi-label{font-weight:500;color:var(--ink-2)}
+.kpi-value{display:flex;align-items:baseline;gap:8px 10px;flex-wrap:wrap}
+.kpi-value::after{content:"";flex-basis:100%;order:2}
+.kpi-value .delta{order:3}
+.big{font-size:var(--fs-display);font-weight:600;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.unit{color:var(--ink-3);font-weight:500;margin-left:-4px}
+.delta{
+  display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-cap);font-weight:600;
+  padding:2px 8px 2px 6px;border-radius:999px;white-space:nowrap;
+}
+.delta svg.lucide{width:14px;height:14px;stroke-width:2}
+.delta.good{color:var(--good);background:var(--good-soft)}
+.delta.warn{color:var(--warn);background:var(--warn-soft)}
+.mini{height:64px;margin-top:auto}
+.mini svg{display:block;overflow:visible}
+
+.cmp{display:flex;flex-direction:column;justify-content:center;gap:10px}
+.cmp-row{display:grid;grid-template-columns:52px minmax(0,1fr) 48px;align-items:center;gap:10px}
+.cmp-row .cap:last-child{text-align:right;color:var(--ink-2);font-weight:500}
+.cmp-track{height:10px;display:block}
+.cmp-fill{display:block;height:100%;width:var(--w);border-radius:99px;background:var(--bar);transform-origin:left}
+.cmp-fill.now{background:var(--ink-2)}
+
+.stars{display:flex;gap:4px;margin-bottom:8px}
+.star{position:relative;width:22px;height:22px;color:var(--bar-strong)}
+.star svg.lucide{display:block;width:22px;height:22px;stroke-width:1.5;fill:var(--line)}
+.star.full svg.lucide{color:var(--ink);fill:var(--ink)}
+.star .clip{position:absolute;inset:0 auto 0 0;width:var(--p);overflow:hidden}
+.star .clip svg.lucide{color:var(--ink);fill:var(--ink)}
+.rating-mini{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:4px}
+
+/* ---------- Pipeline ---------- */
+.flow{
+  display:grid;align-items:stretch;
+  grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr);
+}
+.stage{
+  position:relative;display:flex;flex-direction:column;gap:12px;
+  padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);
+}
+.stage-top{display:flex;align-items:center;gap:10px;font-weight:600}
+.stage-icon{
+  width:32px;height:32px;border-radius:9px;background:var(--surface);border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--ink-2);flex:none;
+}
+.stage-mid{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stage-count{font-size:var(--fs-display);font-weight:600;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.stage-cap{margin-top:auto}
+.stage.hot{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 10%,transparent)}
+.stage.hot .stage-icon{color:var(--accent);border-color:var(--accent-line)}
+.stage.hot .stage-count{color:var(--accent)}
+.flag{
+  position:absolute;top:-11px;right:14px;font-size:var(--fs-cap);font-weight:600;line-height:20px;
+  padding:0 9px;border-radius:999px;background:var(--accent);color:var(--on-accent);
+}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-cap);font-weight:600;
+  padding:2px 8px 2px 6px;border-radius:999px;white-space:nowrap;
+}
+.chip svg.lucide{width:14px;height:14px;stroke-width:2}
+.chip.bad{color:var(--bad);background:var(--bad-soft)}
+.units{display:flex;flex-wrap:wrap;gap:5px;min-height:9px}
+.u{width:9px;height:9px;border-radius:50%}
+.u.received{box-shadow:inset 0 0 0 1.75px var(--ink-3)}
+.u.preparing{background:var(--warn-dot)}
+.u.late{background:var(--bad-dot)}
+.u.ready{background:var(--good-dot)}
+.u.done{background:var(--bar)}
+.conn{display:flex;align-items:center;justify-content:center;color:var(--bar-strong)}
+.conn svg{width:36px;height:12px;overflow:visible}
+.conn path{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Trend chart ---------- */
+.row2 > .card{display:flex;flex-direction:column}
+.chart{position:relative;width:100%;flex:1;min-height:250px}
+.chart svg{display:block;overflow:visible;position:absolute;left:0;top:0}
+.axis{stroke:var(--line);stroke-width:1}
+.xl{font-size:12px;fill:var(--ink-3)}
+.bar-muted{fill:var(--bar)}
+.bar-accent{fill:var(--accent)}
+.tbar.dim{opacity:.45}
+.avg-halo{stroke:var(--surface);stroke-width:5;stroke-linecap:round}
+.avg{stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:4 4}
+.bracket{stroke:var(--bar-strong);stroke-width:1;fill:none}
+.gl{font-size:12px;fill:var(--ink-3)}
+.gl .acc{fill:var(--accent);font-weight:600}
+.peak{font-size:12px;font-weight:600;fill:var(--accent)}
+.hit{fill:transparent;cursor:pointer}
+
+/* mini svgs */
+.mbar{fill:var(--bar)}
+.mbar.now{fill:var(--bar-strong)}
+.mt{font-size:12px;fill:var(--ink-3)}
+.pbar{fill:var(--bar)}
+.pbar.warn{fill:var(--warn-dot)}
+.target{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.tl{font-size:12px;fill:var(--ink-2);paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+
+/* ---------- Top sellers ---------- */
+.sellers{list-style:none;margin:0;padding:0;display:grid;gap:20px}
+.seller{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start}
+.rank{
+  width:24px;height:24px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:var(--fs-cap);font-weight:600;color:var(--ink-2);
+}
+.s-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.s-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-qty{font-weight:600;font-variant-numeric:tabular-nums}
+.s-sub{display:grid;grid-template-columns:minmax(0,1fr) 64px;align-items:center;gap:12px;margin-top:6px}
+.s-sub .cap{text-align:right}
+.s-track{height:8px;display:block}
+.s-fill{display:block;height:100%;width:var(--w);border-radius:99px;background:var(--bar);transform-origin:left}
+.seller:first-child .s-fill{background:var(--accent)}
+
+/* ---------- Orders table ---------- */
+.table-wrap{overflow-x:auto;margin:0 -24px;padding:0 24px}
+table{width:100%;border-collapse:collapse}
+th{
+  font-size:var(--fs-cap);font-weight:500;color:var(--ink-3);text-align:left;
+  padding:0 12px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+td{padding:13px 12px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+th:first-child,td:first-child{padding-left:0}
+th:last-child,td:last-child{padding-right:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background .15s ease-out}
+tbody tr:hover td{background:var(--surface-2)}
+.c-id{font-weight:600;font-variant-numeric:tabular-nums}
+.c-items{max-width:260px;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.num-r{text-align:right}
+.type{display:inline-flex;align-items:center;gap:8px;color:var(--ink-2)}
+.type svg.lucide{width:16px;height:16px;color:var(--ink-3)}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:500}
+.s-received .dot{background:transparent;box-shadow:inset 0 0 0 1.75px var(--ink-3)}
+.s-preparing .dot{background:var(--warn-dot)}
+.s-ready .dot{background:var(--good-dot)}
+.age{display:inline-flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.age-bar{width:56px;height:6px;border-radius:99px;background:var(--line);overflow:hidden;flex:none}
+.age-bar > span{display:block;height:100%;border-radius:99px;background:var(--bar-strong)}
+.age-bar.ghost{background:transparent}
+.age.late{color:var(--bad);font-weight:600}
+.age.late .age-bar > span{background:var(--bad-dot)}
+.age.late svg.lucide{width:15px;height:15px;stroke-width:2;margin-right:-6px}
+.age.done{color:var(--ink-3)}
+
+.foot{margin-top:28px;text-align:center}
+
+/* ---------- Popover & tooltip ---------- */
+#popover{
+  position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(300px,calc(100vw - 24px));
+  padding:14px 16px;background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;box-shadow:var(--pop-shadow);
+  visibility:hidden;opacity:0;transform:translateY(4px);
+  transition:opacity .16s ease-in,transform .16s ease-in,visibility 0s linear .16s;
+}
+#popover.show{
+  visibility:visible;opacity:1;transform:none;
+  transition:opacity .2s ease-out,transform .2s ease-out;
+}
+#popover.wide{max-width:min(360px,calc(100vw - 24px))}
+#popover h3{font-size:var(--fs-body);font-weight:600;margin-bottom:4px}
+#popover p{color:var(--ink-2)}
+#popover p + p{margin-top:6px}
+.plist{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.plist li{display:flex;align-items:flex-start;gap:10px;color:var(--ink-2)}
+.plist li b{color:var(--ink);font-weight:600}
+.plist .dot{margin-top:7px}
+.plist svg.lucide{margin-top:2px;color:var(--ink)}
+.plist .dot.received{background:transparent;box-shadow:inset 0 0 0 1.75px var(--ink-3)}
+.plist .dot.preparing{background:var(--warn-dot)}
+.plist .dot.ready{background:var(--good-dot)}
+.plist .dot.done{background:var(--bar)}
+.plist .dot.late{background:var(--bad-dot)}
+
+.tip{
+  position:fixed;left:0;top:0;z-index:55;pointer-events:none;white-space:nowrap;
+  padding:6px 10px;border-radius:8px;background:var(--ink);color:var(--surface);
+  font-size:var(--fs-cap);transform:translate(-50%,calc(-100% - 8px));
+  opacity:0;transition:opacity .15s ease-in;
+}
+.tip.show{opacity:1;transition:opacity .15s ease-out}
+.tip b{font-weight:600}
+
+/* ---------- Motion: runs once on entry, then holds still ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes grow-y{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes grow-x{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.tbar,.mbar,.pbar{transform-box:fill-box;transform-origin:50% 100%;transition:opacity .15s ease-out}
+.s-fill,.cmp-fill{transform-origin:left}
+.conn .cl{stroke-dasharray:1;stroke-dashoffset:0}
+.reveal{animation:rise .45s ease-out both;animation-delay:var(--rd,0ms)}
+.stage{animation:rise .4s ease-out both;animation-delay:calc(var(--rd,0ms) + 100ms + var(--d,0ms))}
+.conn .cl{animation:draw .35s ease-out both;animation-delay:calc(var(--rd,0ms) + 220ms + var(--d,0ms))}
+.conn .ch{animation:fade .2s ease-out both;animation-delay:calc(var(--rd,0ms) + 480ms + var(--d,0ms))}
+.tbar,.mbar,.pbar{animation:grow-y .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--rd,0ms) + 120ms + var(--bd,0ms))}
+.s-fill,.cmp-fill{animation:grow-x .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--rd,0ms) + 120ms + var(--bd,0ms))}
+.settled .reveal,.settled .stage,.settled .conn path,.settled .tbar,.settled .mbar,.settled .pbar,.settled .s-fill,.settled .cmp-fill{animation:none}
+.kpi{transition:translate .2s ease-out}
+.kpi:hover{translate:0 -2px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important}
+  .kpi:hover{translate:none}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1180px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .row2{grid-template-columns:minmax(0,1fr)}
+  .c-placed{display:none}
+}
+@media (max-width:1080px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;width:264px;z-index:50;overflow-y:auto;
+    transform:translateX(-100%);transition:transform .25s ease-out;box-shadow:var(--pop-shadow);
+  }
+  .side-inner{position:static;height:100%;min-height:100%}
+  body.nav-open .sidebar{transform:none}
+  .scrim{display:block;position:fixed;inset:0;z-index:45;background:rgba(10,10,12,.35);opacity:0;pointer-events:none;transition:opacity .2s ease-out}
+  body.nav-open .scrim{opacity:1;pointer-events:auto}
+  .mobilebar{display:flex}
+  main{padding:20px 24px 40px}
+}
+@media (max-width:980px){ .c-type{display:none} }
+@media (max-width:820px){
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .conn{height:36px}
+  .conn svg{transform:rotate(90deg)}
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 16px}
+  .stage-mid{justify-content:flex-end}
+  .units,.stage-cap{grid-column:1 / -1}
+  .units{max-width:none}
+  .c-items,.c-total{display:none}
+}
+@media (max-width:560px){
+  .kpis{grid-template-columns:minmax(0,1fr)}
+  main{padding:16px 16px 32px}
+  .card{padding:20px 18px}
+  .table-wrap{margin:0 -18px;padding:0 18px}
+  header.top{margin-bottom:24px}
+  .grid{gap:16px}
+  .stack > * + *{margin-top:16px}
+  .updated{display:none}
+}
+@media (max-width:420px){ .c-cust{display:none} }
+</style>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+   <div class="side-inner">
+    <div class="brand"><span class="logo"><i data-lucide="activity"></i></span>Pulse</div>
+    <nav class="nav-list">
+      <a class="nav active" href="#" aria-current="page"><i data-lucide="layout-dashboard"></i>Home</a>
+      <a class="nav" href="#"><i data-lucide="receipt"></i>Orders<span class="count" aria-label="11 open">11</span></a>
+      <a class="nav" href="#"><i data-lucide="utensils-crossed"></i>Menu</a>
+      <a class="nav" href="#"><i data-lucide="users"></i>Customers</a>
+      <a class="nav" href="#"><i data-lucide="message-square-text"></i>Reviews</a>
+      <a class="nav" href="#"><i data-lucide="wallet"></i>Payouts</a>
+    </nav>
+    <div class="side-foot">
+      <a class="nav" href="#"><i data-lucide="settings"></i>Settings</a>
+      <div class="venue">
+        <span class="avatar">MG</span>
+        <span class="venue-text"><span class="venue-name">Casa Verde Cocina</span><span class="cap">Maria Gomez · Owner</span></span>
+      </div>
+    </div>
+   </div>
+  </aside>
+
+  <main>
+    <div class="wrap">
+      <!-- Mobile bar -->
+      <div class="mobilebar">
+        <button class="icon-btn" id="menuBtn" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><i data-lucide="menu"></i></button>
+        <div class="brand"><span class="logo"><i data-lucide="activity"></i></span>Pulse</div>
+        <span class="avatar">MG</span>
+      </div>
+
+      <!-- Header -->
+      <header class="top">
+        <div>
+          <p class="eyebrow">Friday, September 18 · 11 orders in progress</p>
+          <h1>Good afternoon, Maria</h1>
+        </div>
+        <div class="actions">
+          <span class="updated cap"><i data-lucide="clock"></i>Updated 12:42 PM</span>
+          <span class="pill" id="statusPill" role="status"><span class="dot"></span><span id="statusText">Open · accepting orders</span></span>
+          <button class="btn" id="pauseBtn" type="button"><span class="bi" id="pauseIcon"><i data-lucide="circle-pause"></i></span><span id="pauseLabel">Pause 15 min</span></button>
+          <button class="btn" type="button" data-pop="p-tips" aria-haspopup="dialog" aria-expanded="false" aria-controls="popover"><i data-lucide="lightbulb"></i>Tips</button>
+        </div>
+      </header>
+
+      <div class="stack">
+        <!-- KPI row -->
+        <section class="grid kpis" aria-label="Today at a glance">
+          <article class="card kpi reveal" style="--rd:0ms">
+            <div class="kpi-head">
+              <span class="kpi-icon"><i data-lucide="shopping-bag"></i></span>
+              <span class="kpi-label">Orders today</span>
+              <button class="info" type="button" data-pop="p-orders" aria-label="What does Orders today mean?" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+            </div>
+            <div class="kpi-value">
+              <span class="big" data-to="64" data-fmt="int">64</span>
+              <span class="delta good"><i data-lucide="trending-up"></i>19% vs last Fri</span>
+            </div>
+            <div class="mini" id="miniOrders" role="img" aria-label="Orders per 15 minutes since 10 AM, peaking at 12 around 12:15 PM"></div>
+          </article>
+
+          <article class="card kpi reveal" style="--rd:60ms">
+            <div class="kpi-head">
+              <span class="kpi-icon"><i data-lucide="banknote"></i></span>
+              <span class="kpi-label">Revenue today</span>
+              <button class="info" type="button" data-pop="p-revenue" aria-label="What does Revenue today mean?" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+            </div>
+            <div class="kpi-value">
+              <span class="big" data-to="2087" data-fmt="usd">$2,087</span>
+              <span class="delta good"><i data-lucide="trending-up"></i>16% vs last Fri</span>
+            </div>
+            <div class="mini cmp" role="img" aria-label="Today $2,087 versus $1,798 last Friday at the same time">
+              <div class="cmp-row"><span class="cap">Today</span><span class="cmp-track"><span class="cmp-fill now" style="--w:100%"></span></span><span class="cap tnum">$2,087</span></div>
+              <div class="cmp-row"><span class="cap">Last Fri</span><span class="cmp-track"><span class="cmp-fill" style="--w:86%;--bd:80ms"></span></span><span class="cap tnum">$1,798</span></div>
+            </div>
+          </article>
+
+          <article class="card kpi reveal" style="--rd:120ms">
+            <div class="kpi-head">
+              <span class="kpi-icon"><i data-lucide="timer"></i></span>
+              <span class="kpi-label">Avg prep time</span>
+              <button class="info" type="button" data-pop="p-prep" aria-label="What does Avg prep time mean?" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+            </div>
+            <div class="kpi-value">
+              <span class="big" data-to="13.9" data-fmt="one">13.9</span><span class="unit">min</span>
+              <span class="delta warn"><i data-lucide="trending-up"></i>15.4 this hour</span>
+            </div>
+            <div class="mini" id="miniPrep" role="img" aria-label="Average prep time by hour: 11.2 minutes at 10 AM, 12.9 at 11 AM, 15.4 at 12 PM, against a 15 minute target"></div>
+          </article>
+
+          <article class="card kpi reveal" style="--rd:180ms">
+            <div class="kpi-head">
+              <span class="kpi-icon"><i data-lucide="star"></i></span>
+              <span class="kpi-label">Customer rating</span>
+              <button class="info" type="button" data-pop="p-rating" aria-label="What does Customer rating mean?" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+            </div>
+            <div class="kpi-value">
+              <span class="big" data-to="4.7" data-fmt="one">4.7</span><span class="unit">/ 5</span>
+              <span class="delta good"><i data-lucide="trending-up"></i>+0.1 vs last month</span>
+            </div>
+            <div class="mini rating-mini">
+              <div class="stars" role="img" aria-label="4.7 out of 5 stars">
+                <span class="star full"><i data-lucide="star"></i></span>
+                <span class="star full"><i data-lucide="star"></i></span>
+                <span class="star full"><i data-lucide="star"></i></span>
+                <span class="star full"><i data-lucide="star"></i></span>
+                <span class="star" style="--p:70%"><i data-lucide="star"></i><span class="clip"><i data-lucide="star"></i></span></span>
+              </div>
+              <span class="cap">218 reviews · last 30 days</span>
+            </div>
+          </article>
+        </section>
+
+        <!-- Pipeline -->
+        <section class="card reveal" style="--rd:240ms" aria-labelledby="pipeTitle">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Live order pipeline
+                <button class="info" type="button" data-pop="p-pipe" aria-label="How the order pipeline works" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+              </p>
+              <h2 id="pipeTitle">Kitchen is the bottleneck: 2 orders late</h2>
+            </div>
+          </div>
+          <div class="flow">
+            <div class="stage" style="--d:0ms">
+              <div class="stage-top"><span class="stage-icon"><i data-lucide="inbox"></i></span>Received</div>
+              <div class="stage-mid"><span class="stage-count">2</span></div>
+              <div class="units" data-units="received:2" aria-hidden="true"></div>
+              <p class="cap stage-cap">avg 1 min to accept</p>
+            </div>
+            <div class="conn" style="--d:120ms" aria-hidden="true"><svg viewBox="0 0 36 12"><path class="cl" d="M1 6H34" pathLength="1"/><path class="ch" d="M29.5 1.5 34 6l-4.5 4.5"/></svg></div>
+            <div class="stage hot" style="--d:120ms">
+              <span class="flag">Bottleneck</span>
+              <div class="stage-top"><span class="stage-icon"><i data-lucide="chef-hat"></i></span>Preparing</div>
+              <div class="stage-mid"><span class="stage-count">6</span><span class="chip bad"><i data-lucide="triangle-alert"></i>2 late</span></div>
+              <div class="units" data-units="late:2,preparing:4" aria-hidden="true"></div>
+              <p class="cap stage-cap">avg 11 min in kitchen</p>
+            </div>
+            <div class="conn" style="--d:240ms" aria-hidden="true"><svg viewBox="0 0 36 12"><path class="cl" d="M1 6H34" pathLength="1"/><path class="ch" d="M29.5 1.5 34 6l-4.5 4.5"/></svg></div>
+            <div class="stage" style="--d:240ms">
+              <div class="stage-top"><span class="stage-icon"><i data-lucide="bell-ring"></i></span>Ready</div>
+              <div class="stage-mid"><span class="stage-count">3</span></div>
+              <div class="units" data-units="ready:3" aria-hidden="true"></div>
+              <p class="cap stage-cap">avg 4 min waiting</p>
+            </div>
+            <div class="conn" style="--d:360ms" aria-hidden="true"><svg viewBox="0 0 36 12"><path class="cl" d="M1 6H34" pathLength="1"/><path class="ch" d="M29.5 1.5 34 6l-4.5 4.5"/></svg></div>
+            <div class="stage" style="--d:360ms">
+              <div class="stage-top"><span class="stage-icon"><i data-lucide="circle-check-big"></i></span>Picked up</div>
+              <div class="stage-mid"><span class="stage-count">53</span></div>
+              <div class="units" data-units="done:53" aria-hidden="true"></div>
+              <p class="cap stage-cap">so far today</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Trend + Top sellers -->
+        <div class="grid row2">
+          <section class="card reveal" style="--rd:300ms" aria-labelledby="trendTitle">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Daily orders · last 14 days
+                  <button class="info" type="button" data-pop="p-trend" aria-label="About the daily orders chart" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+                </p>
+                <h2 id="trendTitle">Orders up 18% on the week before</h2>
+              </div>
+            </div>
+            <div class="chart" id="trend"></div>
+          </section>
+
+          <section class="card reveal" style="--rd:360ms" aria-labelledby="sellTitle">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Top sellers · last 7 days
+                  <button class="info" type="button" data-pop="p-sellers" aria-label="About top sellers" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+                </p>
+                <h2 id="sellTitle">Birria tacos outsell #2 by 66%</h2>
+              </div>
+            </div>
+            <ol class="sellers" id="sellers"></ol>
+          </section>
+        </div>
+
+        <!-- Latest orders -->
+        <section class="card reveal" style="--rd:420ms" aria-labelledby="ordTitle">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Latest orders
+                <button class="info" type="button" data-pop="p-table" aria-label="About the latest orders list" aria-expanded="false" aria-controls="popover"><i data-lucide="info"></i></button>
+              </p>
+              <h2 id="ordTitle">#1055 and #1057 are past their ready time</h2>
+            </div>
+            <a class="btn" href="#">All orders<i data-lucide="arrow-right"></i></a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th class="c-placed">Placed</th>
+                  <th class="c-cust">Customer</th>
+                  <th class="c-items">Items</th>
+                  <th class="c-type">Type</th>
+                  <th class="c-total num-r">Total</th>
+                  <th>Status</th>
+                  <th>Waiting</th>
+                </tr>
+              </thead>
+              <tbody id="orders"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <footer class="foot cap">Illustrative sample data</footer>
+    </div>
+  </main>
+</div>
+
+<div id="popover" role="dialog" aria-modal="false"></div>
+<div id="tip" class="tip" role="status" aria-live="polite"></div>
+
+<!-- ---------- Info popup content ---------- -->
+<template id="p-tips">
+  <h3>Get more from your dashboard</h3>
+  <ul class="plist">
+    <li><i data-lucide="info"></i><span>Tap any info icon to see what a number means.</span></li>
+    <li><i data-lucide="triangle-alert"></i><span>Red means late. Handle those orders first.</span></li>
+    <li><i data-lucide="circle-pause"></i><span>Kitchen swamped? Pause new orders for 15 minutes.</span></li>
+    <li><i data-lucide="utensils-crossed"></i><span>Put your top sellers first on your menu.</span></li>
+  </ul>
+</template>
+<template id="p-orders">
+  <h3>Orders today</h3>
+  <p>Every online order placed since you opened at 10 AM. Cancelled orders don't count.</p>
+  <p>The tag compares with last Friday at this same time.</p>
+</template>
+<template id="p-revenue">
+  <h3>Revenue today</h3>
+  <p>What customers paid today, after discounts. Tips and delivery fees aren't included.</p>
+  <p>The bars compare with last Friday at this same time.</p>
+</template>
+<template id="p-prep">
+  <h3>Average prep time</h3>
+  <p>Minutes from accepting an order to marking it ready. Aim for 15 or less.</p>
+  <p>Each bar is one hour today. Amber means that hour ran slow.</p>
+</template>
+<template id="p-rating">
+  <h3>Customer rating</h3>
+  <p>The average star rating customers gave you in the last 30 days. Anything above 4.5 is excellent.</p>
+</template>
+<template id="p-pipe">
+  <h3>Where open orders are right now</h3>
+  <ul class="plist">
+    <li><span class="dot received"></span><span><b>Received</b> · placed, not started yet</span></li>
+    <li><span class="dot preparing"></span><span><b>Preparing</b> · the kitchen is making it</span></li>
+    <li><span class="dot ready"></span><span><b>Ready</b> · packed, waiting for pickup</span></li>
+    <li><span class="dot done"></span><span><b>Picked up</b> · with the customer or driver</span></li>
+    <li><span class="dot late"></span><span><b>Late</b> · past the ready time you promised</span></li>
+  </ul>
+</template>
+<template id="p-trend">
+  <h3>Daily orders</h3>
+  <p>Completed orders per day. Colored bars are the last 7 days; gray bars are the 7 days before.</p>
+  <p>Dashed lines show each week's daily average. Hover or tap a bar for its number.</p>
+</template>
+<template id="p-sellers">
+  <h3>Top sellers</h3>
+  <p>Menu items ranked by how many sold in the last 7 days. Sales are after discounts.</p>
+</template>
+<template id="p-table">
+  <h3>Latest orders</h3>
+  <p>Newest orders appear first. The bar shows time used against your 15-minute ready promise.</p>
+</template>
+
+<script>
+(function(){
+  'use strict';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function(s, r){ return (r || document).querySelector(s); };
+  var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var icons = function(){ if (window.lucide && lucide.createIcons) lucide.createIcons(); };
+
+  /* ---------- Illustrative data (Fri, Sep 18, 12:42 PM) ---------- */
+  var ORDERS_15 = [1,2,2,3,4,6,7,9,11,12,7];            // orders per 15 min since 10:00, last bucket in progress
+  var PREP = [{h:'10 AM', v:11.2}, {h:'11 AM', v:12.9}, {h:'12 PM', v:15.4}];
+  var PREP_TARGET = 15;
+  var DAYS = [
+    {d:'Fri',f:'Friday',n:4,v:168},{d:'Sat',f:'Saturday',n:5,v:181},{d:'Sun',f:'Sunday',n:6,v:142},
+    {d:'Mon',f:'Monday',n:7,v:96},{d:'Tue',f:'Tuesday',n:8,v:104},{d:'Wed',f:'Wednesday',n:9,v:118},
+    {d:'Thu',f:'Thursday',n:10,v:131},
+    {d:'Fri',f:'Friday',n:11,v:196},{d:'Sat',f:'Saturday',n:12,v:214},{d:'Sun',f:'Sunday',n:13,v:165},
+    {d:'Mon',f:'Monday',n:14,v:112},{d:'Tue',f:'Tuesday',n:15,v:121},{d:'Wed',f:'Wednesday',n:16,v:139},
+    {d:'Thu',f:'Thursday',n:17,v:158}
+  ];
+  var SELLERS = [
+    {name:'Birria tacos (3)',    qty:312, rev:4212},
+    {name:'Carnitas burrito',    qty:188, rev:2444},
+    {name:'Chicken tinga bowl',  qty:164, rev:2132},
+    {name:'Street corn (elote)', qty:141, rev:705},
+    {name:'Horchata',            qty:127, rev:508}
+  ];
+  var ORDERS = [
+    {id:1064, t:'12:41 PM', who:'Jordan P.',  items:'2× Birria tacos, Horchata',         total:31.00, type:'Pickup',   st:'received',  age:1},
+    {id:1063, t:'12:40 PM', who:'Aisha K.',   items:'Chicken tinga bowl + 2 more',       total:41.25, type:'Delivery', st:'received',  age:2},
+    {id:1062, t:'12:37 PM', who:'Sam R.',     items:'Carnitas burrito, Chips & salsa',   total:18.50, type:'Pickup',   st:'preparing', age:5},
+    {id:1061, t:'12:35 PM', who:'Priya N.',   items:'Family taco pack + 1 more',         total:68.00, type:'Delivery', st:'preparing', age:7},
+    {id:1060, t:'12:33 PM', who:'Diego F.',   items:'Birria tacos, Street corn',         total:18.50, type:'Pickup',   st:'preparing', age:9},
+    {id:1059, t:'12:30 PM', who:'Hannah W.',  items:'2× Horchata',                       total:8.00,  type:'Pickup',   st:'ready',     age:12},
+    {id:1058, t:'12:28 PM', who:'Marcus T.',  items:'Chicken tinga bowl, Street corn',   total:18.00, type:'Delivery', st:'preparing', age:14},
+    {id:1057, t:'12:23 PM', who:'Luis M.',    items:'3× Birria tacos',                   total:40.50, type:'Pickup',   st:'preparing', age:19, late:true},
+    {id:1056, t:'12:22 PM', who:'Emma S.',    items:'Carnitas burrito',                  total:13.00, type:'Delivery', st:'ready',     age:20},
+    {id:1055, t:'12:20 PM', who:'Kofi A.',    items:'Family taco pack, 4× Horchata',     total:84.00, type:'Delivery', st:'preparing', age:22, late:true}
+  ];
+  var ST_LABEL = {received:'Received', preparing:'Preparing', ready:'Ready'};
+
+  var fmt = {
+    int: function(v){ return Math.round(v).toLocaleString('en-US'); },
+    usd: function(v){ return '$' + Math.round(v).toLocaleString('en-US'); },
+    one: function(v){ return v.toFixed(1); }
+  };
+
+  /* ---------- Static builds ---------- */
+  $$('.units').forEach(function(u){
+    u.getAttribute('data-units').split(',').forEach(function(part){
+      var p = part.split(':');
+      for (var i = 0; i < +p[1]; i++){ var s = document.createElement('span'); s.className = 'u ' + p[0]; u.appendChild(s); }
+    });
+  });
+
+  var maxQ = SELLERS[0].qty;
+  $('#sellers').innerHTML = SELLERS.map(function(s, i){
+    return '<li class="seller"><span class="rank">' + (i + 1) + '</span><div>' +
+      '<div class="s-line"><span class="s-name">' + s.name + '</span><span class="s-qty">' + s.qty + ' sold</span></div>' +
+      '<div class="s-sub"><span class="s-track"><span class="s-fill" style="--w:' + (s.qty / maxQ * 100).toFixed(1) + '%;--bd:' + (i * 60) + 'ms"></span></span>' +
+      '<span class="cap tnum">$' + s.rev.toLocaleString('en-US') + '</span></div></div></li>';
+  }).join('');
+
+  $('#orders').innerHTML = ORDERS.map(function(o){
+    var wait;
+    if (o.st === 'received' || o.st === 'preparing'){
+      var w = Math.min(100, o.age / PREP_TARGET * 100);
+      wait = '<span class="age' + (o.late ? ' late' : '') + '"><span class="age-bar"><span style="width:' + w.toFixed(0) + '%"></span></span>' +
+        (o.late ? '<i data-lucide="triangle-alert"></i>' : '') + o.age + ' min</span>';
+    } else {
+      wait = '<span class="age done"><span class="age-bar ghost"></span>' + o.age + ' min</span>';
+    }
+    return '<tr>' +
+      '<td class="c-id">#' + o.id + '</td>' +
+      '<td class="c-placed cap">' + o.t + '</td>' +
+      '<td class="c-cust">' + o.who + '</td>' +
+      '<td class="c-items">' + o.items + '</td>' +
+      '<td class="c-type"><span class="type"><i data-lucide="' + (o.type === 'Pickup' ? 'shopping-bag' : 'bike') + '"></i>' + o.type + '</span></td>' +
+      '<td class="c-total num-r tnum">$' + o.total.toFixed(2) + '</td>' +
+      '<td><span class="status s-' + o.st + '"><span class="dot"></span>' + ST_LABEL[o.st] + '</span></td>' +
+      '<td>' + wait + '</td></tr>';
+  }).join('');
+
+  /* ---------- Mini charts ---------- */
+  function miniOrders(){
+    var el = $('#miniOrders'), W = el.clientWidth, H = 64, top = 4, base = 44, gap = 3, n = ORDERS_15.length;
+    var bw = (W - gap * (n - 1)) / n, max = Math.max.apply(null, ORDERS_15), s = '';
+    ORDERS_15.forEach(function(v, i){
+      var h = v / max * (base - top);
+      s += '<rect class="mbar' + (i === n - 1 ? ' now' : '') + '" x="' + (i * (bw + gap)).toFixed(1) + '" y="' + (base - h).toFixed(1) +
+        '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" style="--bd:' + (i * 30) + 'ms"/>';
+    });
+    s += '<text class="mt" x="0" y="' + (H - 4) + '">10 AM</text><text class="mt" x="' + W + '" y="' + (H - 4) + '" text-anchor="end">Now</text>';
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + s + '</svg>';
+  }
+
+  function miniPrep(){
+    var el = $('#miniPrep'), W = el.clientWidth, H = 64, top = 12, base = 44, max = 18;
+    var y = function(v){ return base - v / max * (base - top); };
+    var band = W / PREP.length, bw = Math.min(40, band * 0.5), s = '';
+    PREP.forEach(function(d, i){
+      var x = i * band + (band - bw) / 2, h = base - y(d.v);
+      s += '<rect class="pbar' + (d.v > PREP_TARGET ? ' warn' : '') + '" x="' + x.toFixed(1) + '" y="' + y(d.v).toFixed(1) +
+        '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" style="--bd:' + (i * 80) + 'ms"/>';
+      s += '<text class="mt" x="' + (i * band + band / 2).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle">' + d.h + '</text>';
+    });
+    var ty = y(PREP_TARGET).toFixed(1);
+    s += '<line class="target" x1="0" x2="' + W + '" y1="' + ty + '" y2="' + ty + '"/>';
+    s += '<text class="tl" x="0" y="' + (ty - 5) + '">15 min target</text>';
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + s + '</svg>';
+  }
+
+  /* ---------- 14-day trend ---------- */
+  function renderTrend(){
+    var el = $('#trend'), W = el.clientWidth, H = Math.max(250, Math.min(360, el.clientHeight));
+    var top = 24, plotH = H - top - 72, base = top + plotH, max = 230, n = DAYS.length;
+    var band = W / n, bw = Math.min(34, band * 0.62);
+    var y = function(v){ return base - v / max * plotH; };
+    var sum = function(a){ return a.reduce(function(t, d){ return t + d.v; }, 0); };
+    var groups = [DAYS.slice(0, 7), DAYS.slice(7)];
+    var avgs = groups.map(function(g){ return sum(g) / g.length; });
+    var peak = 0; DAYS.forEach(function(d, i){ if (d.v > DAYS[peak].v) peak = i; });
+    var s = '';
+
+    s += '<line class="axis" x1="0" x2="' + W + '" y1="' + (base + .5) + '" y2="' + (base + .5) + '"/>';
+    DAYS.forEach(function(d, i){
+      var x = i * band + (band - bw) / 2, h = base - y(d.v), cx = (i * band + band / 2).toFixed(1);
+      s += '<rect class="tbar ' + (i >= 7 ? 'bar-accent' : 'bar-muted') + '" data-i="' + i + '" x="' + x.toFixed(1) + '" y="' + y(d.v).toFixed(1) +
+        '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="4" style="--bd:' + (i * 20) + 'ms"/>';
+      s += '<text class="xl" x="' + cx + '" y="' + (base + 18) + '" text-anchor="middle">' + (band >= 34 ? d.d : d.d.charAt(0)) + '</text>';
+      s += '<text class="xl" x="' + cx + '" y="' + (base + 33) + '" text-anchor="middle">' + d.n + '</text>';
+    });
+    // Peak label
+    var px = (peak * band + band / 2).toFixed(1);
+    s += '<text class="peak" x="' + px + '" y="' + (y(DAYS[peak].v) - 8).toFixed(1) + '" text-anchor="middle">' + DAYS[peak].v + '</text>';
+    // Weekly average lines + brackets
+    groups.forEach(function(g, gi){
+      var x1 = gi * 7 * band + 4, x2 = (gi * 7 + 7) * band - 4, ay = y(avgs[gi]).toFixed(1);
+      s += '<line class="avg-halo" x1="' + x1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y1="' + ay + '" y2="' + ay + '"/>';
+      s += '<line class="avg" x1="' + x1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y1="' + ay + '" y2="' + ay + '"/>';
+      var by = base + 42;
+      s += '<path class="bracket" d="M' + x1.toFixed(1) + ' ' + by + 'v5H' + x2.toFixed(1) + 'v-5"/>';
+      var gw = x2 - x1, avg = Math.round(avgs[gi]);
+      var name = gw >= 200 ? (gi ? 'Last 7 days' : 'Prior 7 days') : (gi ? 'Last 7' : 'Prior 7');
+      var val = (gw >= 200 ? 'avg ' : '') + avg + '/day';
+      s += '<text class="gl" x="' + ((x1 + x2) / 2).toFixed(1) + '" y="' + (by + 22) + '" text-anchor="middle">' + name + ' · ' +
+        (gi ? '<tspan class="acc">' + val + '</tspan>' : val) + '</text>';
+    });
+    // Hit areas
+    DAYS.forEach(function(d, i){
+      s += '<rect class="hit" data-i="' + i + '" x="' + (i * band).toFixed(1) + '" y="' + top + '" width="' + band.toFixed(1) + '" height="' + (plotH + 40) + '"/>';
+    });
+
+    var label = 'Bar chart of daily orders, Sep 4 to Sep 17. Prior 7 days averaged ' + Math.round(avgs[0]) +
+      ' per day; last 7 days averaged ' + Math.round(avgs[1]) + ' per day. Peak: ' + DAYS[peak].v + ' on ' + DAYS[peak].f + ', Sep ' + DAYS[peak].n + '.';
+    el.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + label + '">' + s + '</svg>';
+    bindTrendTips();
+  }
+
+  var tip = $('#tip');
+  function hideTip(){
+    tip.classList.remove('show');
+    $$('#trend .tbar').forEach(function(b){ b.classList.remove('dim'); });
+  }
+  function bindTrendTips(){
+    var svg = $('#trend svg');
+    $$('.hit', svg).forEach(function(h){
+      var show = function(){
+        var i = +h.getAttribute('data-i'), d = DAYS[i];
+        var bar = svg.querySelector('.tbar[data-i="' + i + '"]');
+        tip.innerHTML = '<b>' + d.f + ', Sep ' + d.n + '</b> · ' + d.v + ' orders';
+        var r = bar.getBoundingClientRect(), tw = tip.offsetWidth;
+        var cx = Math.max(tw / 2 + 8, Math.min(r.left + r.width / 2, window.innerWidth - tw / 2 - 8));
+        tip.style.left = cx + 'px';
+        tip.style.top = r.top + 'px';
+        tip.classList.add('show');
+        $$('.tbar', svg).forEach(function(b){ b.classList.toggle('dim', b !== bar); });
+      };
+      h.addEventListener('pointerenter', show);
+      h.addEventListener('pointerdown', show);
+    });
+    svg.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hideTip(); });
+  }
+  document.addEventListener('pointerdown', function(e){ if (!e.target.closest('#trend')) hideTip(); });
+  window.addEventListener('scroll', hideTip, {passive:true});
+
+  function sizeKey(){ var t = $('#trend'); return [t.clientWidth, t.clientHeight, $('#miniOrders').clientWidth, $('#miniPrep').clientWidth].join('x'); }
+  var lastKey = '';
+  function drawCharts(){ lastKey = sizeKey(); miniOrders(); miniPrep(); renderTrend(); }
+  function redrawIfResized(){ if (sizeKey() !== lastKey){ hideTip(); drawCharts(); } }
+  drawCharts();
+  var rt;
+  var schedule = function(){ clearTimeout(rt); rt = setTimeout(redrawIfResized, 120); };
+  if ('ResizeObserver' in window){
+    var ro = new ResizeObserver(schedule);
+    ['#trend', '#miniOrders', '#miniPrep'].forEach(function(s){ ro.observe($(s)); });
+  } else {
+    window.addEventListener('resize', schedule);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redrawIfResized);
+
+  icons();
+
+  /* ---------- Entry motion (runs once) ---------- */
+  function countUp(el){
+    var to = parseFloat(el.getAttribute('data-to')), f = fmt[el.getAttribute('data-fmt') || 'int'];
+    if (reduce){ el.textContent = f(to); return; }
+    var t0 = performance.now(), dur = 600;
+    (function step(t){
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = f(to * e);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  // Card, bar and path entrances are CSS keyframes; JS only runs the stat count-up.
+  if (!reduce){
+    $$('.kpi').forEach(function(c){
+      var d = parseFloat(getComputedStyle(c).getPropertyValue('--rd')) || 0;
+      setTimeout(function(){ $$('[data-to]', c).forEach(countUp); }, d);
+    });
+  }
+  // After entry, freeze: re-rendered charts (e.g. on resize) appear without replaying motion.
+  setTimeout(function(){ document.documentElement.classList.add('settled'); }, 1600);
+
+  /* ---------- Info popups: hover (mouse) + click/tap ---------- */
+  var pop = $('#popover'), current = null, pinned = false, hideT;
+  function place(){
+    if (!current) return;
+    var r = current.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight, m = 12;
+    var left = Math.max(m, Math.min(r.left + r.width / 2 - pw / 2, window.innerWidth - pw - m));
+    var top = r.bottom + 8;
+    if (top + ph > window.innerHeight - m && r.top - ph - 8 > m) top = r.top - ph - 8;
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+  }
+  function openPop(btn, pin){
+    clearTimeout(hideT);
+    if (current !== btn){
+      if (current) current.setAttribute('aria-expanded', 'false');
+      var tpl = document.getElementById(btn.getAttribute('data-pop'));
+      pop.innerHTML = tpl.innerHTML;
+      var pid = btn.getAttribute('data-pop');
+      pop.classList.toggle('wide', pid === 'p-tips' || pid === 'p-pipe');
+      pop.setAttribute('aria-label', (btn.getAttribute('aria-label') || 'Tips'));
+      icons();
+      current = btn;
+      pinned = !!pin;
+    } else if (pin){ pinned = true; }
+    btn.setAttribute('aria-expanded', 'true');
+    place();
+    pop.classList.add('show');
+  }
+  function closePop(){
+    clearTimeout(hideT);
+    pop.classList.remove('show');
+    if (current) current.setAttribute('aria-expanded', 'false');
+    current = null; pinned = false;
+  }
+  function softClose(){ if (!pinned){ clearTimeout(hideT); hideT = setTimeout(closePop, 140); } }
+
+  $$('[data-pop]').forEach(function(btn){
+    btn.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && !(pinned && current !== btn)) openPop(btn, false); });
+    btn.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') softClose(); });
+    btn.addEventListener('focus', function(){ if (!pinned) openPop(btn, false); });
+    btn.addEventListener('blur', function(){ softClose(); });
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if (current === btn && pinned) closePop(); else openPop(btn, true);
+    });
+  });
+  pop.addEventListener('pointerenter', function(){ clearTimeout(hideT); });
+  pop.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') softClose(); });
+  document.addEventListener('click', function(e){ if (current && !pop.contains(e.target)) closePop(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){
+      var b = current; closePop(); hideTip(); closeNav();
+      if (b) b.focus({preventScroll:true});
+    }
+  });
+  window.addEventListener('scroll', place, {passive:true});
+  window.addEventListener('resize', place);
+
+  /* ---------- Pause orders toggle ---------- */
+  var paused = false;
+  $('#pauseBtn').addEventListener('click', function(){
+    paused = !paused;
+    $('#statusPill').classList.toggle('paused', paused);
+    $('#statusText').textContent = paused ? 'Paused · back at 12:57 PM' : 'Open · accepting orders';
+    $('#pauseLabel').textContent = paused ? 'Resume orders' : 'Pause 15 min';
+    $('#pauseIcon').innerHTML = '<i data-lucide="' + (paused ? 'circle-play' : 'circle-pause') + '"></i>';
+    icons();
+  });
+
+  /* ---------- Mobile nav drawer ---------- */
+  var menuBtn = $('#menuBtn');
+  function closeNav(){ document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+  menuBtn.addEventListener('click', function(){
+    var open = document.body.classList.toggle('nav-open');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  $('#scrim').addEventListener('click', closeNav);
+})();
+</script>
+</body>
+</html>

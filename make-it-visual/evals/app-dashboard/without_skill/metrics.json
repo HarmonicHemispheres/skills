@@ -1,0 +1,54 @@
+{
+  "visible_words": 714,
+  "popup_words": 660,
+  "popups_opened": 9,
+  "popup_triggers": 9,
+  "popups_open_via": [
+    "click"
+  ],
+  "longest_block_words": 27,
+  "longest_block_text": "You've taken 87 orders so far, 12% more than last Friday at this time. 12 are in the kitchen or waiting for pickup, and 2 need attention.",
+  "blocks_over_25_words": 1,
+  "text_sizes": [
+    "34px",
+    "32px",
+    "26px",
+    "17px",
+    "15px",
+    "14px",
+    "13.5px",
+    "13px",
+    "12.5px",
+    "12px",
+    "11.5px",
+    "11px",
+    "10.5px"
+  ],
+  "emoji": [],
+  "icons": 46,
+  "page_height_px": 2389,
+  "screens_tall": 2.7,
+  "has_motion": true,
+  "reduced_motion": true,
+  "saturated_share": 0.0209,
+  "color_families": [
+    {
+      "hex": "#e2754b",
+      "share": 0.942
+    },
+    {
+      "hex": "#2e8e5a",
+      "share": 0.035
+    },
+    {
+      "hex": "#3f73d6",
+      "share": 0.023
+    }
+  ],
+  "file_kb": 77.4,
+  "timing": {
+    "total_tokens": 169308,
+    "duration_ms": 997594,
+    "total_duration_seconds": 997.6
+  }
+}

@@ -1,0 +1,38 @@
+# Attaches <skill>.skill and <skill>.zip for every skill to each GitHub release.
+# Publish a release (GitHub UI, or `gh release create v1.0.0 --generate-notes`)
+# and this uploads the files to it. Run it manually to get the files as a
+# workflow artifact without releasing.
+name: Package skills
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate and build
+        run: python scripts/build_skills.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skills
+          path: dist/*
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/* --clobber --repo "$GITHUB_REPOSITORY"

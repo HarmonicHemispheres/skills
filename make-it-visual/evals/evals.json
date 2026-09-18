@@ -1,0 +1,13 @@
+{
+  "skill_name": "make-it-visual",
+  "evals": [
+    {
+      "id": 1,
+      "name": "app-dashboard",
+      "prompt": "Build the home dashboard for Pulse, a web app that restaurant owners use to manage online orders. This is the first screen an owner sees when they log in during a busy lunch service. It should show today's orders, revenue, average prep time and customer rating; how order volume has trended over the last 14 days; where current orders are in the pipeline (received → preparing → ready → picked up); the most recent orders and their status; and the top-selling menu items this week. Most owners aren't technical, so explain what each metric means and include a few tips for getting the most out of the dashboard. Use realistic mock data. Make it a single self-contained HTML file (no build step; CDN libraries are fine) and save it as dashboard.html.",
+      "expected_output": "A single-file HTML dashboard. With the skill: KPI stat tiles up top, a trend chart titled with its takeaway, the pipeline as a flow, statuses as badges, metric explanations and tips behind info popups, one accent color, subtle motion that respects reduced-motion.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "No paragraphs: every visible text block is 25 words or fewer",
+      "passed": true,
+      "evidence": "0 blocks over 25 words; longest is 8: \"#1055 and #1057 are past their ready time\""
+    },
+    {
+      "text": "Explanations and tips are on demand: popups reveal 30+ words",
+      "passed": true,
+      "evidence": "9 popups revealed 241 words; 332 words always visible"
+    },
+    {
+      "text": "Info popups open on click or tap, not hover only",
+      "passed": true,
+      "evidence": "9 of 9 info triggers opened via focus"
+    },
+    {
+      "text": "Type scale: 3 text sizes or fewer (display, body, caption)",
+      "passed": true,
+      "evidence": "3 sizes: 28px, 15px, 12px"
+    },
+    {
+      "text": "Motion respects prefers-reduced-motion",
+      "passed": true,
+      "evidence": "Has a prefers-reduced-motion rule"
+    },
+    {
+      "text": "No emoji used as icons",
+      "passed": true,
+      "evidence": "No emoji in visible text"
+    },
+    {
+      "text": "Accent discipline: saturated color covers 10% of the page or less",
+      "passed": true,
+      "evidence": "2.5% of pixels are strongly saturated"
+    },
+    {
+      "text": "At most 4 color families (one accent plus good, warning, bad)",
+      "passed": true,
+      "evidence": "3 families: #535ddb 74%, #d29557 19%, #a2383d 3%"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "visible_words": 332,
+  "popup_words": 241,
+  "popups_opened": 9,
+  "popup_triggers": 9,
+  "popups_open_via": [
+    "focus"
+  ],
+  "longest_block_words": 8,
+  "longest_block_text": "#1055 and #1057 are past their ready time",
+  "blocks_over_25_words": 0,
+  "text_sizes": [
+    "28px",
+    "15px",
+    "12px"
+  ],
+  "emoji": [],
+  "icons": 51,
+  "page_height_px": 1971,
+  "screens_tall": 2.2,
+  "has_motion": true,
+  "reduced_motion": true,
+  "saturated_share": 0.0248,
+  "color_families": [
+    {
+      "hex": "#535ddb",
+      "share": 0.74
+    },
+    {
+      "hex": "#d29557",
+      "share": 0.19
+    },
+    {
+      "hex": "#a2383d",
+      "share": 0.028
+    }
+  ],
+  "file_kb": 51.7,
+  "timing": {
+    "total_tokens": 204434,
+    "duration_ms": 1204483,
+    "total_duration_seconds": 1204.5
+  }
+}
